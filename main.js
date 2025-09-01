@@ -32,12 +32,7 @@ const puppeteer = require('puppeteer');
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-    webVersionCache: {
-        type: 'remote',
-        // endpoint dengan placeholder {version}
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/{version}.html',
-        strict: false
-    },
+  
     puppeteer: {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
