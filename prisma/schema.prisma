@@ -14,22 +14,26 @@ datasource db {
 }
 
 model ticket {
-  id           Int       @id @default(autoincrement())
-  telepon      String
-  nama         String
-  chat_pertama String    @db.Text()
-  ticket_hash  String    @unique
-  is_selesai   Boolean   @default(false)
-  createdAt    DateTime? @default(now())
-  updatedAt    DateTime? @updatedAt
+  id             Int       @id @default(autoincrement())
+  telepon        String
+  nama           String
+  telepon_anonim String?
+  nama_anonim    String?
+  chat_pertama   String    @db.Text()
+  ticket_hash    String    @unique
+  is_selesai     Boolean   @default(false)
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @updatedAt
 }
 
 model conversations {
-  id          Int       @id @default(autoincrement())
-  ticket_hash String
-  telepon     String
-  nama        String
-  chat        String    @db.Text()
-  createdAt   DateTime? @default(now())
-  updatedAt   DateTime? @updatedAt
+  id             Int       @id @default(autoincrement())
+  ticket_hash    String
+  telepon        String
+  nama           String
+  telepon_anonim String?
+  nama_anonim    String?
+  chat           String    @db.Text()
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @updatedAt
 }

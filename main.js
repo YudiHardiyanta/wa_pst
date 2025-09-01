@@ -26,6 +26,20 @@ function toDbDateTime(timestamp) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+function anonymize(text) {
+  // Hilangkan spasi atau tanda pemisah
+  let clean = text;
+
+  // Ambil 3 digit depan & 2 digit belakang
+  let prefix = clean.slice(0, 3);
+  let suffix = clean.slice(-2);
+
+  // Sisa digit jadi *
+  let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
+
+  return prefix + stars + suffix;
+}
+
 const puppeteer = require('puppeteer');
 
 
@@ -63,7 +77,9 @@ client.on("message_create", async (msg) => {
                 data: {
                     ticket_hash: ticket_hash,
                     telepon: msg.from.split('@')[0],
+                    telepon_anonim : anonymize(msg.from.split('@')[0]),
                     nama: msg._data.notifyName,
+                    nama_anonim : anonymize(msg._data.notifyName),
                     chat: msg.body,
                 }
             })
@@ -92,7 +108,9 @@ client.on("message_create", async (msg) => {
                 const new_ticket = await prisma.ticket.create({
                     data: {
                         telepon: msg.from.split('@')[0],
+                        telepon_anonim : anonymize(msg.from.split('@')[0]),
                         nama: msg._data.notifyName,
+                        nama_anonim : anonymize(msg._data.notifyName),
                         chat_pertama: msg.body,
                         ticket_hash: ticket_hash
                     }
@@ -103,7 +121,9 @@ client.on("message_create", async (msg) => {
                 data: {
                     ticket_hash: ticket_hash,
                     telepon: msg.from.split('@')[0],
+                    telepon_anonim : anonymize(msg.from.split('@')[0]),
                     nama: msg._data.notifyName,
+                    nama_anonim : anonymize(msg._data.notifyName),
                     chat: msg.body,
                 }
             })
