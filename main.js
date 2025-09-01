@@ -28,8 +28,16 @@ function toDbDateTime(timestamp) {
 
 const puppeteer = require('puppeteer');
 
+
+
 const client = new Client({
     authStrategy: new LocalAuth(),
+    webVersionCache: {
+        type: 'remote',
+        // endpoint dengan placeholder {version}
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/{version}.html',
+        strict: false
+    },
     puppeteer: {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
@@ -66,13 +74,13 @@ client.on("message_create", async (msg) => {
                 }
             })
             // kalimat end
-            if(msg.body=='Terima kasih telah menghubungi Pelayanan Statistik Terpadu (PST) Badan Pusat Statistik (BPS) Provinsi Bali.'){
+            if (msg.body == 'Terima kasih telah menghubungi Pelayanan Statistik Terpadu (PST) Badan Pusat Statistik (BPS) Provinsi Bali.') {
                 const update_ticket = await prisma.ticket.update({
-                    where : {
-                        ticket_hash : ticket_hash
+                    where: {
+                        ticket_hash: ticket_hash
                     },
-                    data : {
-                        is_selesai : true
+                    data: {
+                        is_selesai: true
                     }
                 })
             }
