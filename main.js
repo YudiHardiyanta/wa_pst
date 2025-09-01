@@ -27,17 +27,17 @@ function toDbDateTime(timestamp) {
 }
 
 function anonymize(text) {
-  // Hilangkan spasi atau tanda pemisah
-  let clean = text;
+    // Hilangkan spasi atau tanda pemisah
+    let clean = text;
 
-  // Ambil 3 digit depan & 2 digit belakang
-  let prefix = clean.slice(0, 3);
-  let suffix = clean.slice(-2);
+    // Ambil 3 digit depan & 2 digit belakang
+    let prefix = clean.slice(0, 3);
+    let suffix = clean.slice(-2);
 
-  // Sisa digit jadi *
-  let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
+    // Sisa digit jadi *
+    let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
 
-  return prefix + stars + suffix;
+    return prefix + stars + suffix;
 }
 
 const puppeteer = require('puppeteer');
@@ -67,69 +67,80 @@ client.on('authenticated', () => {
 
 // Listen semua pesan (masuk & keluar)
 client.on("message_create", async (msg) => {
-
-    if (msg.fromMe) {
-        if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
-            // cek apakah sudah ada topik
-            const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
-
-            const new_conversation = await prisma.conversations.create({
-                data: {
-                    ticket_hash: ticket_hash,
-                    telepon: msg.from.split('@')[0],
-                    telepon_anonim : anonymize(msg.from.split('@')[0]),
-                    nama: msg._data.notifyName,
-                    nama_anonim : anonymize(msg._data.notifyName),
-                    chat: msg.body,
+    try {
+        if (msg.fromMe) {
+            if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
+                // cek apakah sudah ada topik
+                const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
+                const nama = msg._data.notifyName
+                if(!nama){
+                    nama = 'Anonim'
                 }
-            })
-            // kalimat end
-            if (msg.body == 'Terima kasih telah menghubungi Pelayanan Statistik Terpadu (PST) Badan Pusat Statistik (BPS) Provinsi Bali.') {
-                const update_ticket = await prisma.ticket.update({
+                const new_conversation = await prisma.conversations.create({
+                    data: {
+                        ticket_hash: ticket_hash,
+                        telepon: msg.from.split('@')[0],
+                        telepon_anonim: anonymize(msg.from.split('@')[0]),
+                        nama: nama,
+                        nama_anonim: anonymize(nama),
+                        chat: msg.body,
+                    }
+                })
+                // kalimat end
+                if (msg.body == 'Terima kasih telah menghubungi Pelayanan Statistik Terpadu (PST) Badan Pusat Statistik (BPS) Provinsi Bali.') {
+                    const update_ticket = await prisma.ticket.update({
+                        where: {
+                            ticket_hash: ticket_hash
+                        },
+                        data: {
+                            is_selesai: true
+                        }
+                    })
+                }
+            }
+        } else {
+            if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
+                const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
+                const nama = msg._data.notifyName
+                if(!nama){
+                    nama = 'Anonim'
+                }
+                const ticket = await prisma.ticket.findUnique({
                     where: {
                         ticket_hash: ticket_hash
-                    },
-                    data: {
-                        is_selesai: true
                     }
                 })
-            }
-        }
-    } else {
-        if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
-            const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
-            const ticket = await prisma.ticket.findUnique({
-                where: {
-                    ticket_hash: ticket_hash
+                if (!ticket) {
+                    //bikin ticket baru
+                    const new_ticket = await prisma.ticket.create({
+                        data: {
+                            telepon: msg.from.split('@')[0],
+                            telepon_anonim: anonymize(msg.from.split('@')[0]),
+                            nama: nama,
+                            nama_anonim: anonymize(nama),
+                            chat_pertama: msg.body,
+                            ticket_hash: ticket_hash
+                        }
+                    })
                 }
-            })
-            if (!ticket) {
-                //bikin ticket baru
-                const new_ticket = await prisma.ticket.create({
+
+                const new_conversation = await prisma.conversations.create({
                     data: {
+                        ticket_hash: ticket_hash,
                         telepon: msg.from.split('@')[0],
-                        telepon_anonim : anonymize(msg.from.split('@')[0]),
-                        nama: msg._data.notifyName,
-                        nama_anonim : anonymize(msg._data.notifyName),
-                        chat_pertama: msg.body,
-                        ticket_hash: ticket_hash
+                        telepon_anonim: anonymize(msg.from.split('@')[0]),
+                        nama: nama,
+                        nama_anonim: anonymize(nama),
+                        chat: msg.body,
                     }
                 })
+
             }
-
-            const new_conversation = await prisma.conversations.create({
-                data: {
-                    ticket_hash: ticket_hash,
-                    telepon: msg.from.split('@')[0],
-                    telepon_anonim : anonymize(msg.from.split('@')[0]),
-                    nama: msg._data.notifyName,
-                    nama_anonim : anonymize(msg._data.notifyName),
-                    chat: msg.body,
-                }
-            })
-
         }
+    } catch (error) {
+        console.log(error)
     }
+
 
 
 
