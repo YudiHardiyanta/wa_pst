@@ -72,17 +72,14 @@ client.on("message_create", async (msg) => {
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
                 // cek apakah sudah ada topik
                 const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
-                const nama = msg._data.notifyName
-                if(!nama){
-                    nama = 'Anonim'
-                }
+                
                 const new_conversation = await prisma.conversations.create({
                     data: {
                         ticket_hash: ticket_hash,
                         telepon: msg.from.split('@')[0],
                         telepon_anonim: anonymize(msg.from.split('@')[0]),
-                        nama: nama,
-                        nama_anonim: anonymize(nama),
+                        nama: msg._data.notifyName,
+                        nama_anonim: anonymize(msg._data.notifyName),
                         chat: msg.body,
                     }
                 })
@@ -101,10 +98,6 @@ client.on("message_create", async (msg) => {
         } else {
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
                 const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
-                const nama = msg._data.notifyName
-                if(!nama){
-                    nama = 'Anonim'
-                }
                 const ticket = await prisma.ticket.findUnique({
                     where: {
                         ticket_hash: ticket_hash
@@ -116,8 +109,8 @@ client.on("message_create", async (msg) => {
                         data: {
                             telepon: msg.from.split('@')[0],
                             telepon_anonim: anonymize(msg.from.split('@')[0]),
-                            nama: nama,
-                            nama_anonim: anonymize(nama),
+                            nama: msg._data.notifyName,
+                            nama_anonim: anonymize(msg._data.notifyName),
                             chat_pertama: msg.body,
                             ticket_hash: ticket_hash
                         }
@@ -129,8 +122,8 @@ client.on("message_create", async (msg) => {
                         ticket_hash: ticket_hash,
                         telepon: msg.from.split('@')[0],
                         telepon_anonim: anonymize(msg.from.split('@')[0]),
-                        nama: nama,
-                        nama_anonim: anonymize(nama),
+                        nama: msg._data.notifyName,
+                        nama_anonim: anonymize(msg._data.notifyName),
                         chat: msg.body,
                     }
                 })

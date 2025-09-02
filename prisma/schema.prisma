@@ -16,7 +16,7 @@ datasource db {
 model ticket {
   id             Int       @id @default(autoincrement())
   telepon        String
-  nama           String
+  nama           String?
   telepon_anonim String?
   nama_anonim    String?
   chat_pertama   String    @db.Text()
@@ -30,7 +30,7 @@ model conversations {
   id             Int       @id @default(autoincrement())
   ticket_hash    String
   telepon        String
-  nama           String
+  nama           String?
   telepon_anonim String?
   nama_anonim    String?
   chat           String    @db.Text()
