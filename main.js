@@ -87,7 +87,7 @@ client.on("message_create", async (msg) => {
                     }
                 })
                 // kalimat end
-                if (msg.body == 'Terima kasih telah menghubungi Pelayanan Statistik Terpadu (PST) Badan Pusat Statistik (BPS) Provinsi Bali.') {
+                if (msg.body == 'Jika sudah tidak ada pertanyaan lagi, ijin kami mengakhiri percakapan ini. Data/informasi yang diberikan di atas semoga bermanfaat.') {
                     const update_ticket = await prisma.ticket.update({
                         where: {
                             ticket_hash: ticket_hash
