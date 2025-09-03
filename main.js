@@ -28,16 +28,21 @@ function toDbDateTime(timestamp) {
 
 function anonymize(text) {
     // Hilangkan spasi atau tanda pemisah
-    let clean = text;
+    try {
+        let clean = text;
 
-    // Ambil 3 digit depan & 2 digit belakang
-    let prefix = clean.slice(0, 3);
-    let suffix = clean.slice(-2);
+        // Ambil 3 digit depan & 2 digit belakang
+        let prefix = clean.slice(0, 3);
+        let suffix = clean.slice(-2);
 
-    // Sisa digit jadi *
-    let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
+        // Sisa digit jadi *
+        let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
 
-    return prefix + stars + suffix;
+        return prefix + stars + suffix;
+    } catch (error) {
+        return text
+    }
+
 }
 
 const puppeteer = require('puppeteer');
@@ -72,7 +77,7 @@ client.on("message_create", async (msg) => {
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
                 // cek apakah sudah ada topik
                 const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
-                
+
                 const new_conversation = await prisma.conversations.create({
                     data: {
                         ticket_hash: ticket_hash,
