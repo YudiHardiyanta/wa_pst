@@ -75,8 +75,18 @@ client.on("message_create", async (msg) => {
     try {
         if (msg.fromMe) {
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
-                // cek apakah sudah ada topik
-                const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
+                // cek apakah ada tiket sebelumnya
+                const old_ticket = await prisma.ticket.findFirst({
+                    where : {
+                        is_selesai : false,
+                        telepon : msg.to.split('@')[0] 
+                    }
+                })
+                if(!old_ticket){
+                    const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
+                }else{
+                    const ticket_hash = old_ticket.ticket_hash
+                }
 
                 const new_conversation = await prisma.conversations.create({
                     data: {
@@ -102,7 +112,19 @@ client.on("message_create", async (msg) => {
             }
         } else {
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
-                const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
+                // cek apakah ada tiket sebelumnya
+                const old_ticket = await prisma.ticket.findFirst({
+                    where : {
+                        is_selesai : false,
+                        telepon : msg.from.split('@')[0] 
+                    }
+                })
+                if(!old_ticket){
+                    const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
+                }else{
+                    const ticket_hash = old_ticket.ticket_hash
+                }
+                
                 const ticket = await prisma.ticket.findUnique({
                     where: {
                         ticket_hash: ticket_hash
