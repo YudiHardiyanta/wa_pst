@@ -26,21 +26,22 @@ function toDbDateTime(timestamp) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+
+
 function anonymize(text) {
     // Hilangkan spasi atau tanda pemisah
+    let clean = text;
+
+    // Ambil 3 digit depan & 2 digit belakang
+    let prefix = clean.slice(0, 3);
+    let suffix = clean.slice(-2);
     try {
-        let clean = text;
-
-        // Ambil 3 digit depan & 2 digit belakang
-        let prefix = clean.slice(0, 3);
-        let suffix = clean.slice(-2);
-
         // Sisa digit jadi *
         let stars = "*".repeat(clean.length - (prefix.length + suffix.length));
-
         return prefix + stars + suffix;
     } catch (error) {
-        return text
+        let stars = "*".repeat(text.length);
+        return prefix + stars + suffix;
     }
 
 }
@@ -74,18 +75,34 @@ client.on('authenticated', () => {
 client.on("message_create", async (msg) => {
     try {
         if (msg.fromMe) {
+            console.log("pesan keluar");
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
                 // cek apakah ada tiket sebelumnya
                 const old_ticket = await prisma.ticket.findFirst({
-                    where : {
-                        is_selesai : false,
-                        telepon : msg.to.split('@')[0] 
+                    where: {
+                        is_selesai: false,
+                        telepon: msg.to.split('@')[0]
                     }
                 })
-                if(!old_ticket){
-                    const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.to.split('@')[0]).digest("hex")
-                }else{
-                    const ticket_hash = old_ticket.ticket_hash
+                console.log(`cek tiket lama: ${old_ticket ? 'ada' : 'tidak ada'}`);
+                let ticket_hash = null;
+                if (!old_ticket) {
+                    console.log("Tidak ada tiket lama, membuat tiket baru");
+                    ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp) + msg.to.split('@')[0]).digest("hex")
+                    const new_ticket = await prisma.ticket.create({
+                        data: {
+                            telepon: msg.to.split('@')[0],
+                            telepon_anonim: anonymize(msg.to.split('@')[0]),
+                            nama: null,
+                            nama_anonim: null, // seharusnya ke nama pengguna namun masih ke nama PST
+                            chat_pertama: msg.body,
+                            ticket_hash: ticket_hash
+                        }
+                    })
+                    console.log("ticket hash baru : " + ticket_hash)
+                } else {
+                    ticket_hash = old_ticket.ticket_hash
+                    console.log("menggunakan tiket lama : " + ticket_hash)
                 }
 
                 const new_conversation = await prisma.conversations.create({
@@ -98,6 +115,7 @@ client.on("message_create", async (msg) => {
                         chat: msg.body,
                     }
                 })
+                console.log("conversation baru dibuat");
                 // kalimat end
                 if (msg.body == 'Jika sudah tidak ada pertanyaan lagi, ijin kami mengakhiri percakapan ini. Data/informasi yang diberikan di atas semoga bermanfaat.') {
                     const update_ticket = await prisma.ticket.update({
@@ -111,20 +129,34 @@ client.on("message_create", async (msg) => {
                 }
             }
         } else {
-            if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
+            console.log("pesan masuk");
+            if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us' && msg.from.split('@')[0] != 'status')) {
                 // cek apakah ada tiket sebelumnya
                 const old_ticket = await prisma.ticket.findFirst({
-                    where : {
-                        is_selesai : false,
-                        telepon : msg.from.split('@')[0] 
+                    where: {
+                        is_selesai: false,
+                        telepon: msg.from.split('@')[0]
                     }
                 })
-                if(!old_ticket){
-                    const ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp).split(' ')[0] + msg.from.split('@')[0]).digest("hex")
-                }else{
-                    const ticket_hash = old_ticket.ticket_hash
+                let ticket_hash = null;
+                if (!old_ticket) {
+                    ticket_hash = crypto.createHash("sha256").update(toDbDateTime(msg.timestamp) + msg.from.split('@')[0]).digest("hex")
+                } else {
+                    ticket_hash = old_ticket.ticket_hash
+                    //cek nama tiket apakah masih NULL atau tidak
+                    if (!old_ticket.nama) {
+                        const update_ticket = await prisma.ticket.update({
+                            where: {
+                                ticket_hash: ticket_hash
+                            },
+                            data: {
+                                nama: msg._data.notifyName,
+                                nama_anonim: anonymize(msg._data.notifyName),
+                            }
+                        })
+                    }
                 }
-                
+
                 const ticket = await prisma.ticket.findUnique({
                     where: {
                         ticket_hash: ticket_hash
