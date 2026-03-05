@@ -6,6 +6,7 @@ const dotenv = require('dotenv')
 
 
 dotenv.config();  // Memuat variabel lingkungan dari file .env
+process.env.TZ = "Asia/Makassar"
 
 const prisma = new PrismaClient();
 
