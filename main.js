@@ -75,6 +75,9 @@ client.on('authenticated', () => {
 // Listen semua pesan (masuk & keluar)
 client.on("message_create", async (msg) => {
     try {
+        const now = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" })
+        )
         if (msg.fromMe) {
             console.log("pesan keluar");
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
@@ -97,7 +100,9 @@ client.on("message_create", async (msg) => {
                             nama: null,
                             nama_anonim: null, // seharusnya ke nama pengguna namun masih ke nama PST
                             chat_pertama: msg.body,
-                            ticket_hash: ticket_hash
+                            ticket_hash: ticket_hash,
+                            createdAt : now,
+                            updatedAt : now,
                         }
                     })
                     console.log("ticket hash baru : " + ticket_hash)
@@ -114,6 +119,8 @@ client.on("message_create", async (msg) => {
                         nama: msg._data.notifyName,
                         nama_anonim: anonymize(msg._data.notifyName),
                         chat: msg.body,
+                        createdAt : now,
+                        updatedAt : now,
                     }
                 })
                 console.log("conversation baru dibuat");
@@ -124,7 +131,8 @@ client.on("message_create", async (msg) => {
                             ticket_hash: ticket_hash
                         },
                         data: {
-                            is_selesai: true
+                            is_selesai: true,
+                            updatedAt : now,
                         }
                     })
                 }
@@ -153,6 +161,7 @@ client.on("message_create", async (msg) => {
                             data: {
                                 nama: msg._data.notifyName,
                                 nama_anonim: anonymize(msg._data.notifyName),
+                                updatedAt : now,
                             }
                         })
                     }
@@ -172,7 +181,9 @@ client.on("message_create", async (msg) => {
                             nama: msg._data.notifyName,
                             nama_anonim: anonymize(msg._data.notifyName),
                             chat_pertama: msg.body,
-                            ticket_hash: ticket_hash
+                            ticket_hash: ticket_hash,
+                            createdAt : now,
+                            updatedAt : now,
                         }
                     })
                 }
@@ -185,6 +196,8 @@ client.on("message_create", async (msg) => {
                         nama: msg._data.notifyName,
                         nama_anonim: anonymize(msg._data.notifyName),
                         chat: msg.body,
+                        createdAt : now,
+                        updatedAt : now,
                     }
                 })
 
