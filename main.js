@@ -78,6 +78,7 @@ client.on("message_create", async (msg) => {
         const now = new Date(
             new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" })
         )
+        console.log(now)
         if (msg.fromMe) {
             console.log("pesan keluar");
             if ((msg.from.split('@')[1] != 'g.us') && (msg.to.split('@')[1] != 'g.us')) {
