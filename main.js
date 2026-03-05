@@ -117,7 +117,7 @@ client.on("message_create", async (msg) => {
                 })
                 console.log("conversation baru dibuat");
                 // kalimat end
-                if (msg.body == 'Jika sudah tidak ada pertanyaan lagi, ijin kami mengakhiri percakapan ini. Data/informasi yang diberikan di atas semoga bermanfaat.') {
+                if (msg.body == 'Jika sudah tidak ada pertanyaan lagi, ijin kami mengakhiri percakapan ini. Semoga data/informasi yang diberikan di atas bermanfaat.') {
                     const update_ticket = await prisma.ticket.update({
                         where: {
                             ticket_hash: ticket_hash
@@ -192,10 +192,6 @@ client.on("message_create", async (msg) => {
     } catch (error) {
         console.log(error)
     }
-
-
-
-
 });
 
 

@@ -5,3 +5,4 @@ node_modules
 /generated/prisma
 /.wwebjs_auth
 /.wwebjs_cache
+backup_personal.json
