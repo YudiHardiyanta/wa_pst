@@ -75,9 +75,9 @@ client.on('authenticated', () => {
 // Listen semua pesan (masuk & keluar)
 client.on("message_create", async (msg) => {
     try {
-        const now = new Date(
-            new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" })
-        )
+        const now = new Date().toLocaleString("id-ID", {
+            timeZone: "Asia/Makassar"
+         })
         console.log(now)
         if (msg.fromMe) {
             console.log("pesan keluar");
